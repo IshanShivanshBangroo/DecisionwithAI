@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Confidence + Deliberation Lab</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --panel:#ffffff;
+      --text:#111827;
+      --muted:#4b5563;
+      --border:#e5e7eb;
+      --accent:#2563eb;
+      --accent2:#059669;
+      --warn:#b45309;
+      --danger:#b91c1c;
+      --shadow: 0 10px 24px rgba(17,24,39,.08);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.35;
+    }
+    header{
+      padding:20px 16px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,#fff,rgba(255,255,255,.7));
+      position:sticky;top:0;z-index:10;
+    }
+    .wrap{max-width:980px;margin:0 auto;}
+    .title{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+    h1{font-size:20px;margin:0;letter-spacing:.2px;}
+    .pill{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--border);
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+    }
+    main{padding:18px 16px 36px;}
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;}
+    @media (max-width: 880px){
+      .grid{grid-template-columns:1fr;}
+    }
+    .subtle{color:var(--muted);}
+    .small{font-size:13px;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .btn.ghost{background:transparent;}
+    .btn:disabled{opacity:.55;cursor:not-allowed;}
+    .btn.choice{min-width:160px;text-align:center;}
+    .btn.choice.selected{outline:3px solid rgba(37,99,235,.25);border-color:rgba(37,99,235,.55)}
+    .field{display:flex;flex-direction:column;gap:6px;margin:10px 0 0;}
+    label{font-weight:650;font-size:13px;}
+    input[type="text"]{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      background:#fff;
+      color:var(--text);
+    }
+    input[type="range"]{width:100%;}
+    .kpi{
+      display:flex;gap:10px;flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .kpi > div{
+      flex:1;
+      min-width:160px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fbfbfd;
+    }
+    .kpi .big{font-size:20px;font-weight:800;}
+    .kpi .cap{font-size:12px;color:var(--muted);}
+    .hr{height:1px;background:var(--border);margin:14px 0;}
+    .stepper{display:flex;gap:8px;flex-wrap:wrap;}
+    .step{
+      font-size:12px;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fff;
+      color:var(--muted);
+    }
+    .step.active{border-color:rgba(37,99,235,.55);color:var(--text);background:rgba(37,99,235,.06)}
+    .scenario h2{margin:0 0 8px;font-size:18px}
+    .scenario h3{margin:14px 0 6px;font-size:14px}
+    ul{margin:6px 0 0 18px}
+    .aiBox{
+      border:1px solid rgba(37,99,235,.35);
+      background:rgba(37,99,235,.04);
+      border-radius:12px;
+      padding:12px;
+    }
+    .tag{
+      font-size:12px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      display:inline-block;
+      background:#fff;
+      color:var(--muted);
+      margin-right:6px;
+    }
+    .tag.good{border-color:rgba(5,150,105,.35);background:rgba(5,150,105,.06);color:#065f46}
+    .tag.warn{border-color:rgba(180,83,9,.35);background:rgba(180,83,9,.06);color:#7c2d12}
+    .tag.bad{border-color:rgba(185,28,28,.35);background:rgba(185,28,28,.06);color:#7f1d1d}
+    .note{font-size:12px;color:var(--muted);}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .footerActions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .hidden{display:none !important;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap title">
+      <div>
+        <h1>Confidence + Deliberation Lab</h1>
+        <div class="subtle small">A short, offline mini-simulation (you’ll finish in ~8–12 minutes).</div>
+      </div>
+      <div class="pill">Goal: feel how <b>AI confidence</b> shifts <b>your confidence</b>, and how <b>structured challenge</b> changes reliance.</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <!-- START / SETUP -->
+      <section id="screenStart" class="card">
+        <div class="grid">
+          <div>
+            <p style="margin-top:0">
+              You’ll make 3 decisions. For each case:
+              <b>(1) decide + set your confidence</b> → <b>(2) see AI recommendation + AI confidence</b> →
+              <b>(3) do one short “challenge” step</b> → <b>(4) final decision + confidence</b>.
+            </p>
+            <p class="small subtle" style="margin-bottom:0">
+              This is a teaching tool, not a real model. The “AI” is scripted so we can compare behaviors.
+            </p>
+            <div class="hr"></div>
+
+            <div class="field">
+              <label for="name">Your name (optional)</label>
+              <input id="name" type="text" placeholder="e.g., Ishan" maxlength="40" />
+              <div class="note">Only used locally on this page.</div>
+            </div>
+
+            <div class="field">
+              <label>Track (for a quick comparison)</label>
+              <div class="row">
+                <button class="btn choice" id="trackA" type="button">Track A: feedback after each case</button>
+                <button class="btn choice" id="trackB" type="button">Track B: feedback only at the end</button>
+              </div>
+              <div class="note">Pick one. (Facilitator tip: choose A/B based on last digit of your phone number.)</div>
+            </div>
+
+            <div class="hr"></div>
+            <div class="row">
+              <button class="btn primary" id="startBtn" type="button" disabled>Start</button>
+              <span class="note">No sign-in, no internet needed.</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="aiBox">
+              <div class="row" style="justify-content:space-between">
+                <span class="tag">What you’ll get at the end</span>
+              </div>
+              <ul class="small" style="margin-top:10px">
+                <li><b>Influence index</b> (0–100): how much your confidence moved toward the AI’s confidence</li>
+                <li><b>Deliberation impact</b> (−1, 0, +1+): did structured challenge improve your correctness?</li>
+                <li><b>Role 1 or Role 2</b> + a <b>single-line feedback</b> (used to form 2 debate groups)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CASE SCREEN -->
+      <section id="screenCase" class="card hidden">
+        <div class="row" style="justify-content:space-between;align-items:flex-end">
+          <div>
+            <div class="stepper">
+              <span class="step" id="s1">1. Your decision</span>
+              <span class="step" id="s2">2. AI confidence</span>
+              <span class="step" id="s3">3. Challenge</span>
+              <span class="step" id="s4">4. Final</span>
+            </div>
+            <div class="small subtle" style="margin-top:8px">Case <span id="caseNum" class="mono"></span> of <span id="caseTotal" class="mono"></span></div>
+          </div>
+          <div class="pill" id="trackLabel"></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="grid">
+          <div class="scenario">
+            <h2 id="caseTitle"></h2>
+            <div class="small subtle" id="caseContext"></div>
+
+            <h3>Evidence on the table</h3>
+            <ul id="caseEvidence" class="small"></ul>
+
+            <h3>Your decision</h3>
+            <div class="row" style="margin-top:6px">
+              <button class="btn choice" id="btnAdmit" type="button">Admit</button>
+              <button class="btn choice" id="btnReject" type="button">Reject</button>
+            </div>
+
+            <div class="field">
+              <label for="confInitial">Your confidence (0–100)</label>
+              <input id="confInitial" type="range" min="0" max="100" value="55" />
+              <div class="row" style="justify-content:space-between">
+                <span class="note">0 = guessing</span>
+                <span class="mono" id="confInitialVal">55</span>
+                <span class="note">100 = certain</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="aiBox" id="aiPanel" aria-live="polite">
+              <div class="row" style="justify-content:space-between;align-items:center">
+                <div>
+                  <div class="tag">AI recommendation</div>
+                  <div class="tag" id="aiConfTag">AI confidence</div>
+                </div>
+                <div class="tag" id="aiTruthTag" style="display:none"></div>
+              </div>
+              <div style="margin-top:10px;font-weight:800;font-size:18px" id="aiRec">(hidden until Step 2)</div>
+              <div class="small subtle" id="aiRationale" style="margin-top:6px">(hidden until Step 2)</div>
+
+              <div id="afterAIBlock" class="hidden">
+                <div class="hr"></div>
+                <div class="field" style="margin-top:0">
+                  <label for="confAfterAI">Update your confidence after seeing the AI</label>
+                  <input id="confAfterAI" type="range" min="0" max="100" value="55" />
+                  <div class="row" style="justify-content:space-between">
+                    <span class="note">0</span>
+                    <span class="mono" id="confAfterAIVal">55</span>
+                    <span class="note">100</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="challengeBlock" class="hidden">
+                <div class="hr"></div>
+                <div class="small" style="font-weight:750">Challenge one dimension (structured disagreement)</div>
+                <div class="note">Pick the angle you want to press. The AI will respond and may update its view.</div>
+                <div class="row" style="margin-top:8px">
+                  <button class="btn" type="button" data-dim="fit" id="dimFit">Research fit</button>
+                  <button class="btn" type="button" data-dim="signal" id="dimSignal">Academic signal</button>
+                  <button class="btn" type="button" data-dim="risk" id="dimRisk">Risk / integrity</button>
+                </div>
+                <div class="small" id="aiChallengeReply" style="margin-top:10px"></div>
+                <div class="small" id="aiUpdate" style="margin-top:10px;font-weight:800"></div>
+              </div>
+            </div>
+
+            <div class="footerActions">
+              <button class="btn ghost" id="backBtn" type="button">Back</button>
+              <button class="btn primary" id="nextBtn" type="button" disabled>Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINAL CONFIRMATION / POST-AI (stage 3 analog) -->
+      <section id="screenPostAI" class="card hidden">
+        <h2 style="margin-top:0">Quick “AI removed” check (15 seconds)</h2>
+        <p class="subtle small">Without looking back at the AI panel, re-rate your confidence in your <b>final</b> decision from the last case.</p>
+        <div class="field">
+          <label for="confPostRemoval">Your confidence now (0–100)</label>
+          <input id="confPostRemoval" type="range" min="0" max="100" value="55" />
+          <div class="row" style="justify-content:space-between">
+            <span class="note">0</span>
+            <span class="mono" id="confPostRemovalVal">55</span>
+            <span class="note">100</span>
+          </div>
+        </div>
+        <div class="footerActions">
+          <button class="btn ghost" id="postBack" type="button">Back</button>
+          <button class="btn primary" id="finishBtn" type="button">See results</button>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="screenResults" class="card hidden">
+        <h2 style="margin-top:0">Your results</h2>
+        <div class="small subtle" id="who"></div>
+
+        <div class="kpi">
+          <div>
+            <div class="big" id="kpiInfluence">—</div>
+            <div class="cap">Influence index (0–100)
+              <div class="note">How much your confidence moved toward the AI’s confidence.</div>
+            </div>
+          </div>
+          <div>
+            <div class="big" id="kpiDelib">—</div>
+            <div class="cap">Deliberation impact
+              <div class="note">Did the structured challenge help your correctness?</div>
+            </div>
+          </div>
+          <div>
+            <div class="big" id="kpiRole">—</div>
+            <div class="cap">Role for debate
+              <div class="note">Use this to form 2 discussion groups.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="aiBox">
+          <div class="tag">One-line feedback</div>
+          <div id="feedbackLine" style="margin-top:10px;font-weight:750"></div>
+          <div class="note" id="feedbackNote" style="margin-top:6px"></div>
+          <div class="tag" style="margin-top:14px">Debate stance</div>
+          <div id="roleMessage" class="small" style="margin-top:8px;line-height:1.25"></div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="grid">
+          <div>
+            <h3 style="margin-top:0">What to bring into discussion</h3>
+            <ul class="small">
+              <li>One moment you felt pulled by the AI’s confidence (or resisted it).</li>
+              <li>Whether the “challenge” step changed your mind or the AI’s mind.</li>
+              <li>If you were in Track A, did feedback change how much you trusted confidence cues?</li>
+              <li>After AI was removed, did your confidence “snap back” or stay close?</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="margin-top:0">Group prompt</h3>
+            <div class="small">Role 1: <b>Support</b> the papers’ claims and argue they matter for design.</div>
+            <div class="small" style="margin-top:8px">Role 2: <b>Challenge</b> the claims (limits, risks, missing conditions).</div>
+            <div class="note" style="margin-top:10px">If groups are wildly uneven, swap roles with a neighbor to balance.</div>
+          </div>
+        </div>
+
+        <div class="footerActions">
+          <button class="btn" id="restartBtn" type="button">Restart</button>
+          <button class="btn primary" id="exportBtn" type="button">Copy summary</button>
+        </div>
+        <div class="note" id="copyStatus" style="margin-top:10px"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // ---------------------------
+    // Scripted mini-simulation
+    // ---------------------------
+    const cases = [
+      {
+        title: "Case 1: Candidate A (PhD admissions)",
+        context: "You’re on an admissions committee. You must decide Admit vs Reject.",
+        evidence: [
+          "GPA 3.92, strong course grades (signals ability)",
+          "Statement of purpose is generic; research fit is unclear",
+          "Integrity note: prior plagiarism investigation (unresolved)"
+        ],
+        truth: "Reject",
+        ai: {
+          rec: "Admit",
+          conf: 92,
+          rationale: "Strong academic signal + strong standardized scores outweigh the fit concerns.",
+          byDim: {
+            fit:   { reply: "Fit is ambiguous, but many students pivot successfully in year 1. I’m discounting it.", update: {rec:"Admit", conf:88} },
+            signal:{ reply: "The transcript is consistently strong; that’s my main driver.", update: {rec:"Admit", conf:93} },
+            risk:  { reply: "Integrity risk changes the cost of a mistake. I should weight this more.", update: {rec:"Reject", conf:71} }
+          }
+        }
+      },
+      {
+        title: "Case 2: Candidate B (PhD admissions)",
+        context: "Same decision, different profile.",
+        evidence: [
+          "GPA 3.35 but upward trend; difficult course load",
+          "Two strong research letters; first-author workshop paper",
+          "Strong fit with a funded lab in your department"
+        ],
+        truth: "Admit",
+        ai: {
+          rec: "Reject",
+          conf: 58,
+          rationale: "Borderline GPA makes success uncertain; I’m not confident.",
+          byDim: {
+            fit:   { reply: "Fit is unusually strong, and funded mentorship reduces risk.", update: {rec:"Admit", conf:66} },
+            signal:{ reply: "Academic signal is mixed; upward trend helps but doesn’t erase earlier performance.", update: {rec:"Reject", conf:56} },
+            risk:  { reply: "Integrity risk is low here. The main question is capability vs opportunity.", update: {rec:"Admit", conf:62} }
+          }
+        }
+      },
+      {
+        title: "Case 3: Candidate C (PhD admissions)",
+        context: "Final decision before results.",
+        evidence: [
+          "GPA 3.62, solid fundamentals",
+          "No research output yet; strong project portfolio",
+          "Letters: one very strong, one lukewarm"
+        ],
+        truth: "Reject",
+        ai: {
+          rec: "Admit",
+          conf: 79,
+          rationale: "Portfolio suggests practical strength; I expect growth with mentoring.",
+          byDim: {
+            fit:   { reply: "Fit is acceptable, but missing research experience is a major gap in this program.", update: {rec:"Reject", conf:63} },
+            signal:{ reply: "Academic signal is adequate; not a standout.", update: {rec:"Reject", conf:60} },
+            risk:  { reply: "Risk is moderate because success depends heavily on mentoring capacity.", update: {rec:"Reject", conf:61} }
+          }
+        }
+      }
+    ];
+
+    // ---------------------------
+    // State
+    // ---------------------------
+    const state = {
+      track: null, // 'A' or 'B'
+      feedbackOn: false,
+      idx: 0,
+      step: 1,
+      // per case record
+      records: cases.map(() => ({
+        initialDecision: null,
+        initialConf: 55,
+        afterAIConf: 55,
+        chosenDim: null,
+        aiRec: null,
+        aiConf: null,
+        aiUpdatedRec: null,
+        aiUpdatedConf: null,
+        finalDecision: null,
+        finalConf: 55,
+        correctInitial: null,
+        correctFinal: null,
+        feedbackSeen: false,
+      })),
+      postRemovalConf: 55,
+    };
+
+    // ---------------------------
+    // Helpers
+    // ---------------------------
+    const $ = (id) => document.getElementById(id);
+    const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
+    const abs = Math.abs;
+
+    function setSelected(btn, selected){
+      btn.classList.toggle('selected', selected);
+    }
+    function setStepActive(step){
+      state.step = step;
+      ['s1','s2','s3','s4'].forEach((id,i)=>$(id).classList.toggle('active', i===step-1));
+    }
+
+    function show(id){ $(id).classList.remove('hidden'); }
+    function hide(id){ $(id).classList.add('hidden'); }
+
+    function resetChoiceButtons(){
+      ['btnAdmit','btnReject'].forEach(id=>$(id).classList.remove('selected'));
+      ['dimFit','dimSignal','dimRisk'].forEach(id=>$(id).classList.remove('selected'));
+    }
+
+    function currentCase(){ return cases[state.idx]; }
+    function currentRec(){ return state.records[state.idx]; }
+
+    function updateRanges(){
+      $('confInitialVal').textContent = String($('confInitial').value);
+      $('confAfterAIVal').textContent = String($('confAfterAI').value);
+      $('confPostRemovalVal').textContent = String($('confPostRemoval').value);
+    }
+
+    function canProceed(){
+      const r = currentRec();
+      if(state.step===1) return !!r.initialDecision;
+      if(state.step===2) return true; // user can proceed even if they don't move slider
+      if(state.step===3) return !!r.chosenDim;
+      if(state.step===4) return !!r.finalDecision;
+      return false;
+    }
+
+    function renderCase(){
+      const c = currentCase();
+      const r = currentRec();
+      $('caseNum').textContent = String(state.idx+1);
+      $('caseTotal').textContent = String(cases.length);
+      $('trackLabel').textContent = state.track === 'A' ? 'Track A: feedback after each case' : 'Track B: feedback at the end';
+
+      $('caseTitle').textContent = c.title;
+      $('caseContext').textContent = c.context;
+      $('caseEvidence').innerHTML = '';
+      c.evidence.forEach(e => {
+        const li = document.createElement('li');
+        li.textContent = e;
+        $('caseEvidence').appendChild(li);
+      });
+
+      // Reset UI to current step
+      $('aiRec').textContent = '(hidden until Step 2)';
+      $('aiRationale').textContent = '(hidden until Step 2)';
+      hide('afterAIBlock');
+      hide('challengeBlock');
+      $('aiTruthTag').style.display = 'none';
+      $('aiChallengeReply').textContent = '';
+      $('aiUpdate').textContent = '';
+      $('nextBtn').disabled = true;
+      resetChoiceButtons();
+
+      // restore saved values
+      $('confInitial').value = r.initialConf;
+      $('confAfterAI').value = r.afterAIConf;
+      $('confInitialVal').textContent = String(r.initialConf);
+      $('confAfterAIVal').textContent = String(r.afterAIConf);
+
+      // restore selected decision buttons
+      if(r.initialDecision==='Admit') setSelected($('btnAdmit'), true);
+      if(r.initialDecision==='Reject') setSelected($('btnReject'), true);
+
+      // setup AI values
+      r.aiRec = c.ai.rec;
+      r.aiConf = c.ai.conf;
+      r.aiUpdatedRec = c.ai.rec;
+      r.aiUpdatedConf = c.ai.conf;
+      $('aiConfTag').textContent = `AI confidence: ${c.ai.conf}%`;
+
+      setStepActive(state.step);
+      renderStep();
+    }
+
+    function renderStep(){
+      const c = currentCase();
+      const r = currentRec();
+      $('nextBtn').disabled = !canProceed();
+
+      // Show/hide AI sub-blocks by step
+      if(state.step >= 2){
+        $('aiRec').textContent = `${c.ai.rec} (${c.ai.conf}%)`;
+        $('aiRationale').textContent = c.ai.rationale;
+        show('afterAIBlock');
+      }
+      if(state.step >= 3){
+        show('challengeBlock');
+      }
+
+      // Step 4: final decision UI prompt changes
+      if(state.step === 4){
+        // ensure buttons reflect final decision if set
+        if(r.finalDecision==='Admit'){ setSelected($('btnAdmit'), true); setSelected($('btnReject'), false); }
+        if(r.finalDecision==='Reject'){ setSelected($('btnReject'), true); setSelected($('btnAdmit'), false); }
+      }
+    }
+
+    function showFeedbackIfNeeded(caseIndex){
+      if(!state.feedbackOn) return;
+      const c = cases[caseIndex];
+      const r = state.records[caseIndex];
+      r.feedbackSeen = true;
+      $('aiTruthTag').style.display = 'inline-block';
+      const ok = r.finalDecision === c.truth;
+      $('aiTruthTag').className = ok ? 'tag good' : 'tag bad';
+      $('aiTruthTag').textContent = ok ? `Feedback: correct (${c.truth})` : `Feedback: incorrect (correct was ${c.truth})`;
+    }
+
+    // ---------------------------
+    // Scoring (kept simple + interpretable)
+    // ---------------------------
+    function computeInfluenceIndex(){
+      // How much confidence moved toward AI confidence, averaged across cases.
+      // 0 = never moved closer; 100 = always snapped all the way to AI.
+      let total = 0;
+      let n = 0;
+      for(const [i,r] of state.records.entries()){
+        const aiC = r.aiConf;
+        const g0 = abs(r.initialConf - aiC);
+        const g1 = abs(r.afterAIConf - aiC);
+        const g2 = abs(r.finalConf - r.aiUpdatedConf);
+        // normalize each movement by a max gap of 100
+        const m1 = clamp((g0 - g1)/100, -1, 1);
+        const m2 = clamp((g1 - g2)/100, -1, 1);
+        total += (m1 + m2);
+        n += 2;
+      }
+      // add a light persistence signal using the post-removal check on the last case
+      const last = state.records[state.records.length-1];
+      const persistGap = abs(state.postRemovalConf - last.aiUpdatedConf); // smaller = more persistence
+      const persistScore = clamp((30 - persistGap)/30, -1, 1); // within 30 points counts
+      total += persistScore;
+      n += 1;
+
+      const scaled = clamp(((total/n) + 1)/2 * 100, 0, 100);
+      return Math.round(scaled);
+    }
+
+    function computeDeliberationImpact(){
+      // Did the structured challenge help correctness overall?
+      // returns -1, 0, +1, +2 ... (small integer)
+      let initCorrect = 0;
+      let finalCorrect = 0;
+      let aiFlips = 0;
+      for(const [i,r] of state.records.entries()){
+        const truth = cases[i].truth;
+        const ci = (r.initialDecision === truth);
+        const cf = (r.finalDecision === truth);
+        r.correctInitial = ci;
+        r.correctFinal = cf;
+        if(ci) initCorrect += 1;
+        if(cf) finalCorrect += 1;
+        if(r.aiUpdatedRec !== r.aiRec) aiFlips += 1;
+      }
+      const gain = finalCorrect - initCorrect;
+      // treat “AI flipped after challenge” as a sign deliberation changed the system state
+      if(aiFlips >= 2 && gain === 0) return 1;
+      return gain;
+    }
+
+    function pickRole(influenceIndex, delibImpact){
+      // Role 1 = Support. Role 2 = Challenge.
+      // Goal: create two meaningful debate groups, without everyone landing in the same bucket.
+
+      // Strong signals:
+      if (delibImpact >= 1) return 1;        // deliberation improved correctness
+      if (delibImpact <= -1) return 2;       // deliberation hurt correctness
+
+      if (influenceIndex >= 65) return 1;    // you moved very close to AI confidence
+      if (influenceIndex <= 35) return 2;    // you stayed largely independent of AI confidence
+
+      // Middle zone: split deterministically so the room doesn't all get the same role.
+      // (Uses your choices so it stays stable without asking for a name.)
+      const seed = Math.round(influenceIndex * 10)
+        + (state.track === 'A' ? 7 : 13)
+        + state.records.reduce((acc, r) => {
+            const flip = (r.afterAIDecision && r.initialDecision && r.afterAIDecision !== r.initialDecision) ? 5 : 0;
+            const dim = (r.chosenDim === 'risk') ? 3 : (r.chosenDim === 'signal') ? 2 : 1;
+            return acc + flip + dim;
+          }, 0);
+
+      return (seed % 2 === 0) ? 1 : 2;
+    }
+
+    function feedbackLine(role, influenceIndex, delibImpact){
+      const last = state.records[state.records.length-1];
+      const persistGap = abs(state.postRemovalConf - last.aiUpdatedConf);
+      const persist = persistGap <= 12;
+
+      // A few different feedback templates (avoid everyone getting the same thing)
+      const templates = [];
+      if(delibImpact >= 1){
+        templates.push(`Deliberation helped: your correctness improved (+${delibImpact}). Your “challenge” step changed outcomes.`);
+      }
+      if(delibImpact <= -1){
+        templates.push(`Careful: deliberation didn’t help this time (you ended with ${delibImpact} fewer correct). What misled you?`);
+      }
+      if(influenceIndex >= 70){
+        templates.push(`You were strongly pulled by AI confidence (Influence ${influenceIndex}/100). Confidence displays are not neutral.`);
+      }
+      if(influenceIndex <= 40){
+        templates.push(`You resisted AI confidence cues (Influence ${influenceIndex}/100). Good skepticism — but did you miss useful signals?`);
+      }
+      if(persist){
+        templates.push(`Your confidence stayed close after “AI removal” (persistence). That’s the “stickiness” effect the paper worries about.`);
+      } else {
+        templates.push(`Your confidence shifted after “AI removal” (less persistence). Feedback/reflecting might be recalibrating you.`);
+      }
+
+      // pick one that matches role tone
+      let pick = templates[0];
+      if(role === 1){
+        pick = templates.find(t => t.includes('not neutral') || t.includes('helped') || t.includes('stickiness')) || templates[0];
+      } else {
+        pick = templates.find(t => t.includes('resisted') || t.includes('Careful') || t.includes('recalibrating')) || templates[0];
+      }
+      return pick;
+    }
+
+    // ---------------------------
+    // Event wiring
+    // ---------------------------
+    function init(){
+      // Track selection
+      $('trackA').addEventListener('click', ()=>{
+        state.track='A'; state.feedbackOn=true;
+        setSelected($('trackA'), true); setSelected($('trackB'), false);
+        $('startBtn').disabled = false;
+      });
+      $('trackB').addEventListener('click', ()=>{
+        state.track='B'; state.feedbackOn=false;
+        setSelected($('trackB'), true); setSelected($('trackA'), false);
+        $('startBtn').disabled = false;
+      });
+
+      $('startBtn').addEventListener('click', ()=>{
+        hide('screenStart');
+        show('screenCase');
+        state.idx = 0;
+        state.step = 1;
+        renderCase();
+      });
+
+      // Range updates
+      $('confInitial').addEventListener('input', ()=>{
+        const r=currentRec();
+        r.initialConf = Number($('confInitial').value);
+        updateRanges();
+      });
+      $('confAfterAI').addEventListener('input', ()=>{
+        const r=currentRec();
+        r.afterAIConf = Number($('confAfterAI').value);
+        updateRanges();
+      });
+
+      // Decision buttons (dual-purpose: initial vs final)
+      $('btnAdmit').addEventListener('click', ()=>selectDecision('Admit'));
+      $('btnReject').addEventListener('click', ()=>selectDecision('Reject'));
+
+      function selectDecision(decision){
+        const r=currentRec();
+        if(state.step <= 2){
+          r.initialDecision = decision;
+        } else {
+          r.finalDecision = decision;
+        }
+        setSelected($('btnAdmit'), decision==='Admit');
+        setSelected($('btnReject'), decision==='Reject');
+        $('nextBtn').disabled = !canProceed();
+      }
+
+      // Challenge dimension buttons
+      ['dimFit','dimSignal','dimRisk'].forEach(id=>{
+        $(id).addEventListener('click', ()=>{
+          const dim = $(id).dataset.dim;
+          const r=currentRec();
+          r.chosenDim = dim;
+          ['dimFit','dimSignal','dimRisk'].forEach(x=>$(x).classList.remove('selected'));
+          $(id).classList.add('selected');
+
+          const c=currentCase();
+          const response = c.ai.byDim[dim];
+          $('aiChallengeReply').textContent = response.reply;
+          r.aiUpdatedRec = response.update.rec;
+          r.aiUpdatedConf = response.update.conf;
+          $('aiUpdate').textContent = `Updated AI view: ${r.aiUpdatedRec} (${r.aiUpdatedConf}%)`;
+          $('nextBtn').disabled = !canProceed();
+        });
+      });
+
+      $('backBtn').addEventListener('click', ()=>{
+        if(state.step === 1){
+          // back to start
+          hide('screenCase');
+          show('screenStart');
+          return;
+        }
+        state.step = clamp(state.step - 1, 1, 4);
+        setStepActive(state.step);
+        renderStep();
+      });
+
+      $('nextBtn').addEventListener('click', ()=>{
+        const r=currentRec();
+        if(state.step === 1){
+          state.step = 2;
+          // initialize after-AI confidence to current initial confidence
+          r.afterAIConf = r.initialConf;
+          $('confAfterAI').value = String(r.afterAIConf);
+          $('confAfterAIVal').textContent = String(r.afterAIConf);
+        } else if(state.step === 2){
+          state.step = 3;
+        } else if(state.step === 3){
+          state.step = 4;
+          // initialize final to initial if not chosen
+          if(!r.finalDecision) r.finalDecision = r.initialDecision;
+          if(!r.finalConf) r.finalConf = r.afterAIConf;
+        } else if(state.step === 4){
+          // finish case
+          showFeedbackIfNeeded(state.idx);
+          // move to next case or post-AI screen
+          if(state.idx < cases.length - 1){
+            state.idx += 1;
+            state.step = 1;
+            renderCase();
+            return;
+          }
+          // all cases done → post-AI check
+          hide('screenCase');
+          show('screenPostAI');
+          $('confPostRemoval').value = String(state.records[state.records.length-1].finalConf);
+          state.postRemovalConf = Number($('confPostRemoval').value);
+          updateRanges();
+          return;
+        }
+
+        setStepActive(state.step);
+        renderStep();
+      });
+
+      // Final post-AI screen
+      $('confPostRemoval').addEventListener('input', ()=>{
+        state.postRemovalConf = Number($('confPostRemoval').value);
+        updateRanges();
+      });
+      $('postBack').addEventListener('click', ()=>{
+        hide('screenPostAI');
+        show('screenCase');
+      });
+
+      $('finishBtn').addEventListener('click', ()=>{
+        hide('screenPostAI');
+        show('screenResults');
+
+        const influence = computeInfluenceIndex();
+        const delib = computeDeliberationImpact();
+        const role = pickRole(influence, delib);
+
+        const nm = ($('name').value || '').trim();
+        $('who').textContent = nm ? `Participant: ${nm}` : 'Participant: (anonymous)';
+        $('kpiInfluence').textContent = `${influence}`;
+        $('kpiDelib').textContent = delib > 0 ? `+${delib}` : String(delib);
+        $('kpiRole').textContent = String(role);
+        $('feedbackLine').textContent = feedbackLine(role, influence, delib);
+
+      const roleMsg = (role === 1)
+        ? "Role 1 (Support): Argue that AI confidence cues can sway people, and structured pushback can improve decisions."
+        : "Role 2 (Challenge): Argue that confidence cues can mislead, and deliberation adds cost and may not improve outcomes.";
+      $('roleMessage').textContent = roleMsg;
+
+        $('feedbackNote').textContent = role === 1
+          ? 'Role 1 should argue the findings are real + useful for design.'
+          : 'Role 2 should argue the findings are fragile / risky / incomplete.';
+      });
+
+      // Restart
+      $('restartBtn').addEventListener('click', ()=>location.reload());
+
+      // Copy summary
+      $('exportBtn').addEventListener('click', async ()=>{
+        const influence = $('kpiInfluence').textContent;
+        const delib = $('kpiDelib').textContent;
+        const role = $('kpiRole').textContent;
+        const line = $('feedbackLine').textContent;
+        const txt = `Confidence+Deliberation Lab — Influence ${influence}/100, DelibImpact ${delib}, Role ${role}. ${line}`;
+        try{
+          await navigator.clipboard.writeText(txt);
+          $('copyStatus').textContent = 'Copied to clipboard.';
+        }catch(e){
+          $('copyStatus').textContent = 'Copy failed (browser blocked clipboard). You can select and copy manually.';
+        }
+      });
+
+      updateRanges();
+    }
+
+    init();
+  </script>
+</body>
+</html>
